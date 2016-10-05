@@ -67,8 +67,9 @@ module BulkMethodsMixin
     row_ids = []
     column_names = self.columns.map(&:name)
     has_id = column_names.include?("id")
+    use_uuid = has_id && self.column_for_attribute('id').type
     has_created_at = column_names.include?("created_at")
-    if has_id
+    if has_id && not(use_uuid)
       num_sequences_needed = rows.reject{|r| r[:id].present?}.length
       if num_sequences_needed > 0
         row_ids = connection.next_sequence_values(sequence_name, num_sequences_needed)
@@ -76,7 +77,9 @@ module BulkMethodsMixin
     end
     rows.each do |row|
       # set the primary key if it needs to be set
-      if has_id
+      if use_uuid
+        row[:id] ||= SecureRandom.uuid
+      elsif has_id
         row[:id] ||= row_ids.shift
       end
     end.each do |row|
