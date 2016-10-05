@@ -67,7 +67,7 @@ module BulkMethodsMixin
     row_ids = []
     column_names = self.columns.map(&:name)
     has_id = column_names.include?("id")
-    use_uuid = has_id && self.column_for_attribute('id').type
+    use_uuid = has_id && self.column_for_attribute('id').type == :uuid
     has_created_at = column_names.include?("created_at")
     if has_id && not(use_uuid)
       num_sequences_needed = rows.reject{|r| r[:id].present?}.length
